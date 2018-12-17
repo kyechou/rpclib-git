@@ -1,29 +1,33 @@
 pkgname=rpclib-git
-pkgver=r524.3b00c4c
+pkgver=r525.568cc62
 pkgrel=1
 pkgdesc="c++ msgpack-rpc server and client library"
 arch=(any)
-license=(mit)
-makedepends=(git cmake make)
+url='http://rpclib.net'
+license=('MIT')
 depends=()
+makedepends=(git cmake make)
 provides=(rpclib)
-source=("git://github.com/rpclib/rpclib")
-url="http://rpclib.net/"
-md5sums=(SKIP)
+conflicts=(rpclib)
+source=("$pkgname"::'git://github.com/kyechou/rpclib.git')
+md5sums=('SKIP')
 
 pkgver() {
   # from https://wiki.archlinux.org/index.php/VCS_package_guidelines#Git
-  cd rpclib &&
+  cd "$srcdir/$pkgname"
   printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
 
+build() {
+  cd "$srcdir/$pkgname"
+  mkdir -p build && cd build
+  cmake ..
+  cmake -DCMAKE_INSTALL_PREFIX="$pkgdir/usr/" --build .
+  make
+}
+
 package() {
-  # instructions from http://rpclib.net/compiling/
-  cd rpclib &&
-  mkdir -p build &&
-  cd build &&
-  cmake .. &&
-  cmake -DCMAKE_INSTALL_PREFIX="$pkgdir/usr/" --build . &&
-  make install &&
+  cd "$srcdir/$pkgname/build"
+  make install
   sed s#$pkgdir##g -i "$pkgdir/usr/lib/pkgconfig/rpclib.pc"
 }
